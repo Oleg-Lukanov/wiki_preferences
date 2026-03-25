@@ -100,6 +100,7 @@ dist
 
 # vitepress build output
 **/.vitepress/dist
+CLAUDE.md
 
 # vitepress cache directory
 **/.vitepress/cache
