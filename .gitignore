@@ -138,3 +138,13 @@ CLAUDE.md
 # Vite logs files
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
+
+# Auth state — contains session cookies, never commit
+.auth/
+
+# Environment variables — contains credentials, never commit
+.env
+
+# Playwright reports and results
+playwright-report/
+test-results/

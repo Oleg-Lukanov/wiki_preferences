@@ -1,0 +1,30 @@
+{
+  "name": "wiki_preferences",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "playwright test",
+    "test:setup": "playwright test --project=setup",
+    "test:e2e": "playwright test tests/language-switch.spec.ts",
+    "report": "playwright show-report"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Oleg-Lukanov/wiki_preferences.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/Oleg-Lukanov/wiki_preferences/issues"
+  },
+  "homepage": "https://github.com/Oleg-Lukanov/wiki_preferences#readme",
+  "devDependencies": {
+    "@playwright/test": "^1.58.2",
+    "@types/node": "^25.5.0",
+    "dotenv": "^17.3.1",
+    "typescript": "^6.0.2"
+  }
+}
