@@ -5,46 +5,48 @@ import { UserMenuComponent } from '../components/UserMenuComponent';
 export class PreferencesPage extends BasePage {
   readonly userMenu: UserMenuComponent;
 
-  // Internationalisation section language selector (OOUI combobox)
-  private readonly languageInput;
+  // #mw-input-wplanguage is the <select> element in the Internationalisation section
+  private readonly languageSelect;
   private readonly saveButton;
 
   constructor(page: Page) {
     super(page);
     this.userMenu = new UserMenuComponent(page);
-    // The OOUI widget wraps #mw-input-wplanguage inside a combobox container
-    this.languageInput = page.locator('#mw-input-wplanguage');
+    // #mw-input-wplanguage is the OOUI DropdownInputWidget-php <div> wrapper;
+    // the actual <select> element is nested inside it
+    this.languageSelect = page.locator('#mw-input-wplanguage select');
     this.saveButton = page.locator('#prefcontrol');
   }
 
   async goto(): Promise<void> {
     await this.page.goto('/wiki/Special:Preferences');
-    await this.waitForLoad();
+    // Preferences is a JS-heavy OOUI application — wait for full initialization
+    await this.page.waitForLoadState('networkidle');
   }
 
   /**
-   * Scrolls to the language field, clears it, types the language code,
-   * picks the first matching option from the OOUI dropdown, then verifies selection.
+   * Scrolls to the language widget, then picks the option matching langCode
+   * via the native <select> nested inside the OOUI DropdownInputWidget wrapper.
    */
   async selectLanguage(langCode: string): Promise<void> {
-    await this.languageInput.scrollIntoViewIfNeeded();
-
-    // Click to focus and open the OOUI combobox
-    await this.languageInput.click();
-    await this.languageInput.fill(langCode);
-
-    // Wait for dropdown options to appear and pick the one matching the langCode
-    const optionLocator = this.page.locator(`.oo-ui-menuSelectWidget .oo-ui-optionWidget[data-value="${langCode}"]`);
-    await optionLocator.waitFor({ state: 'visible', timeout: 5000 });
-    await optionLocator.click();
+    const widgetLocator = this.page.locator('#mw-input-wplanguage');
+    // Wait for the OOUI widget to be stably attached (it re-renders on page load)
+    await widgetLocator.waitFor({ state: 'attached' });
+    await widgetLocator.scrollIntoViewIfNeeded();
+    // The OOUI DropdownInputWidget hides the native <select> behind a custom UI element.
+    // force: true bypasses the visibility check so Playwright can set the value directly
+    // on the hidden form element and fires the change event to notify the widget.
+    await this.languageSelect.selectOption({ value: langCode }, { force: true });
   }
 
   async save(): Promise<void> {
-    await this.saveButton.click();
-    await this.waitForLoad();
+    await Promise.all([
+      this.page.waitForLoadState('domcontentloaded'),
+      this.saveButton.click(),
+    ]);
   }
 
   async getSelectedLanguage(): Promise<string> {
-    return (await this.languageInput.inputValue()) ?? '';
+    return (await this.languageSelect.inputValue()) ?? '';
   }
 }

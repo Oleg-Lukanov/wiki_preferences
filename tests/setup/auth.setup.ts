@@ -20,7 +20,7 @@ setup('authenticate as Wikipedia user', async ({ page }) => {
   await page.locator('#wpLoginAttempt').click();
 
   // Wait for successful redirect back to en.wikipedia.org after auth.wikimedia.org flow
-  await page.waitForURL(/en\.wikipedia\.org/, { timeout: 15000 });
+  await page.waitForURL(/en\.wikipedia\.org/, { timeout: 30000 });
   await page.waitForLoadState('domcontentloaded');
 
   // Assert the user is now logged in — not redirected back to login page

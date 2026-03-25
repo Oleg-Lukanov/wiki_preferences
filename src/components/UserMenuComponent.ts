@@ -23,9 +23,8 @@ export class UserMenuComponent {
   }
 
   async openMenu(): Promise<void> {
-    // The dropdown is a checkbox-toggle; click the main nav label (not the sticky header dupe)
-    const label = this.page.locator('#vector-user-links-dropdown-label').first();
-    await label.click();
+    // Click the checkbox toggle directly — the label is blocked by the checkbox element
+    await this.menuToggle.click();
     await this.preferencesLink.waitFor({ state: 'visible' });
   }
 
