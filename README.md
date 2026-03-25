@@ -1,6 +1,10 @@
 # wiki_preferences
 
+[![Playwright Tests](https://github.com/Oleg-Lukanov/wiki_preferences/actions/workflows/playwright.yml/badge.svg)](https://github.com/Oleg-Lukanov/wiki_preferences/actions/workflows/playwright.yml)
+
 Playwright + TypeScript E2E automation project for testing the Wikipedia interface language switching feature.
+
+**[Latest Test Report (GitHub Pages)](https://oleg-lukanov.github.io/wiki_preferences/)**
 
 ---
 

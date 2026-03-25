@@ -1,10 +1,11 @@
 import { BaseComponent } from './BaseComponent';
+import { IUserMenu } from '../interfaces/IUserMenu';
 
 /**
  * Composition component representing the user account menu.
  * Used in pages that need header user menu interactions (MainPage, PreferencesPage).
  */
-export class UserMenuComponent extends BaseComponent {
+export class UserMenuComponent extends BaseComponent implements IUserMenu {
   // CSS kept: hidden checkbox toggle — no accessible role, label is blocked by the input element
   private readonly menuToggle = this.page.locator('#vector-user-links-dropdown-checkbox');
 

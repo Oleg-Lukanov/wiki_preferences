@@ -3,11 +3,13 @@ import { test, expect } from '../src/fixtures/pageFixtures';
 /**
  * TC-01: Successful Wikipedia interface language switch by an authenticated user.
  *
- * Steps:
+ * Steps 1-4 (core scenario — verified by the test body):
  *  1. Open Main Page → verify interface is English.
  *  2. Navigate to Preferences via user menu.
  *  3. Change interface language to Ukrainian (uk) → Save.
  *  4. Verify interface is now Ukrainian.
+ *
+ * Steps 5-8 (teardown — moved to afterEach to keep the test body focused):
  *  5. Change language back to English (en) → Save.
  *  6. Verify interface is back to English.
  *  7. Logout via user menu.
@@ -31,7 +33,31 @@ test.describe('TC-01: Interface language switch', () => {
     }
   });
 
-  test('authenticated user can switch UI language to Ukrainian and back to English', async ({
+  test.afterEach(async ({ preferencesPage }) => {
+    // ── Step 5: Change language back to English ───────────────────────────────
+    // Navigate to preferences (page text may still be in Ukrainian after Step 4)
+    await preferencesPage.goto();
+    // Guard: OOUI disables Save when nothing changed — only save if language differs
+    if ((await preferencesPage.getSelectedLanguage()) !== 'en') {
+      await preferencesPage.selectLanguage('en');
+      await preferencesPage.save();
+    }
+
+    // ── Step 6: Verify interface is back to English ───────────────────────────
+    await expect(preferencesPage.page.locator('html')).toHaveAttribute('lang', 'en');
+
+    // ── Step 7: Logout via user menu ──────────────────────────────────────────
+    await preferencesPage.userMenu.clickLogout();
+    // Wikipedia redirects to Special:UserLogout confirmation page
+    await preferencesPage.page.waitForURL(/Special:UserLogout|UserLogout/, { timeout: 15000 });
+    await preferencesPage.page.waitForLoadState('domcontentloaded');
+
+    // ── Step 8: Verify user is now logged out ─────────────────────────────────
+    // exact:true distinguishes header 'Log in' from body text 'log in'
+    await expect(preferencesPage.page.getByRole('link', { name: 'Log in', exact: true })).toBeVisible();
+  });
+
+  test('authenticated user can switch UI language to Ukrainian', async ({
     mainPage,
     preferencesPage,
   }) => {
@@ -49,25 +75,5 @@ test.describe('TC-01: Interface language switch', () => {
 
     // ── Step 4: Verify interface language is now Ukrainian ────────────────────
     await expect(preferencesPage.page.locator('html')).toHaveAttribute('lang', 'uk');
-
-    // ── Step 5: Change language back to English ───────────────────────────────
-    // Navigate to preferences again (page text will be in Ukrainian but URL stays same)
-    await preferencesPage.goto();
-    await preferencesPage.selectLanguage('en');
-    await preferencesPage.save();
-
-    // ── Step 6: Verify interface is back to English ───────────────────────────
-    await expect(preferencesPage.page.locator('html')).toHaveAttribute('lang', 'en');
-
-    // ── Step 7: Logout via user menu ──────────────────────────────────────────
-    await preferencesPage.userMenu.clickLogout();
-    // Wikipedia redirects to Special:UserLogout confirmation page
-    await preferencesPage.page.waitForURL(/Special:UserLogout|UserLogout/, { timeout: 15000 });
-    await preferencesPage.page.waitForLoadState('domcontentloaded');
-
-    // ── Step 8: Verify user is now logged out ─────────────────────────────────
-    // After logout the header shows a plain 'Log in' link; #pt-login is collapsible
-    // so use the role-based locator. exact:true distinguishes 'Log in' (header) from 'log in' (body text)
-    await expect(preferencesPage.page.getByRole('link', { name: 'Log in', exact: true })).toBeVisible();
   });
 });
