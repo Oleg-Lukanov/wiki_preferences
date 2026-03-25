@@ -7,6 +7,10 @@
     "test": "playwright test",
     "test:setup": "playwright test --project=setup",
     "test:e2e": "playwright test tests/language-switch.spec.ts",
+    "test:headless": "playwright test --project=chromium",
+    "test:headed": "playwright test --project=chromium --headed",
+    "test:ui": "playwright test --ui",
+    "test:docker": "bash run-tests.sh",
     "report": "playwright show-report"
   },
   "repository": {

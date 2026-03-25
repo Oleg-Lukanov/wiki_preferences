@@ -1,22 +1,16 @@
-import { Page } from '@playwright/test';
 import { BasePage } from './BasePage';
 import { UserMenuComponent } from '../components/UserMenuComponent';
 
 export class PreferencesPage extends BasePage {
-  readonly userMenu: UserMenuComponent;
+  readonly userMenu = new UserMenuComponent(this.page);
 
-  // #mw-input-wplanguage is the <select> element in the Internationalisation section
-  private readonly languageSelect;
-  private readonly saveButton;
-
-  constructor(page: Page) {
-    super(page);
-    this.userMenu = new UserMenuComponent(page);
-    // #mw-input-wplanguage is the OOUI DropdownInputWidget-php <div> wrapper;
-    // the actual <select> element is nested inside it
-    this.languageSelect = page.locator('#mw-input-wplanguage select');
-    this.saveButton = page.locator('#prefcontrol');
-  }
+  // CSS kept: OOUI DropdownInputWidget-php hides the native <select> — no accessible role available
+  private readonly languageWidget = this.page.locator('#mw-input-wplanguage');
+  private readonly languageSelect = this.page.locator('#mw-input-wplanguage select');
+  // CSS kept: #prefcontrol is locale-independent — the button label changes with UI language
+  // (e.g. "Save" in English, "Зберегти" in Ukrainian), so getByRole/getByText would break
+  // when preferences are saved while the UI is already in a non-English language.
+  private readonly saveButton = this.page.locator('#prefcontrol');
 
   async goto(): Promise<void> {
     await this.page.goto('/wiki/Special:Preferences');
@@ -29,13 +23,10 @@ export class PreferencesPage extends BasePage {
    * via the native <select> nested inside the OOUI DropdownInputWidget wrapper.
    */
   async selectLanguage(langCode: string): Promise<void> {
-    const widgetLocator = this.page.locator('#mw-input-wplanguage');
     // Wait for the OOUI widget to be stably attached (it re-renders on page load)
-    await widgetLocator.waitFor({ state: 'attached' });
-    await widgetLocator.scrollIntoViewIfNeeded();
-    // The OOUI DropdownInputWidget hides the native <select> behind a custom UI element.
-    // force: true bypasses the visibility check so Playwright can set the value directly
-    // on the hidden form element and fires the change event to notify the widget.
+    await this.languageWidget.waitFor({ state: 'attached' });
+    await this.languageWidget.scrollIntoViewIfNeeded();
+    // force: true bypasses the CSS visibility check on the hidden native <select>
     await this.languageSelect.selectOption({ value: langCode }, { force: true });
   }
 

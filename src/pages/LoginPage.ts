@@ -1,17 +1,10 @@
-import { Page } from '@playwright/test';
 import { BasePage } from './BasePage';
 
 export class LoginPage extends BasePage {
-  private readonly usernameInput;
-  private readonly passwordInput;
-  private readonly loginButton;
-
-  constructor(page: Page) {
-    super(page);
-    this.usernameInput = page.locator('#wpName1');
-    this.passwordInput = page.locator('#wpPassword1');
-    this.loginButton = page.locator('#wpLoginAttempt');
-  }
+  // getByLabel matches the <label> text on the MediaWiki login form
+  private readonly usernameInput = this.page.getByLabel('Username');
+  private readonly passwordInput = this.page.getByLabel('Password');
+  private readonly loginButton = this.page.getByRole('button', { name: 'Log in' });
 
   async goto(): Promise<void> {
     await this.page.goto('/w/index.php?title=Special:UserLogin');

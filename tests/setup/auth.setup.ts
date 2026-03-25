@@ -15,9 +15,9 @@ setup('authenticate as Wikipedia user', async ({ page }) => {
   await page.goto('https://en.wikipedia.org/w/index.php?title=Special:UserLogin');
   await page.waitForLoadState('domcontentloaded');
 
-  await page.locator('#wpName1').fill(username);
-  await page.locator('#wpPassword1').fill(password);
-  await page.locator('#wpLoginAttempt').click();
+  await page.getByLabel('Username').fill(username);
+  await page.getByLabel('Password').fill(password);
+  await page.getByRole('button', { name: 'Log in' }).click();
 
   // Wait for successful redirect back to en.wikipedia.org after auth.wikimedia.org flow
   await page.waitForURL(/en\.wikipedia\.org/, { timeout: 30000 });

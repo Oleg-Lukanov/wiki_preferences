@@ -1,20 +1,12 @@
-import { Page } from '@playwright/test';
+import { BaseComponent } from './BaseComponent';
 
 /**
  * Composition component representing the Wikipedia search bar.
  * Used in pages that expose search functionality.
  */
-export class SearchComponent {
-  private readonly page: Page;
-
-  private readonly searchInput;
-  private readonly searchButton;
-
-  constructor(page: Page) {
-    this.page = page;
-    this.searchInput = page.getByRole('searchbox', { name: 'Search Wikipedia' });
-    this.searchButton = page.getByRole('button', { name: 'Search' });
-  }
+export class SearchComponent extends BaseComponent {
+  private readonly searchInput = this.page.getByRole('searchbox', { name: 'Search Wikipedia' });
+  private readonly searchButton = this.page.getByRole('button', { name: 'Search' });
 
   async search(query: string): Promise<void> {
     await this.searchInput.fill(query);

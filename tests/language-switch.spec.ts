@@ -21,9 +21,14 @@ test.describe('TC-01: Interface language switch', () => {
   test.beforeEach(async ({ preferencesPage }) => {
     // Guarantee English as the starting language to prevent state pollution from
     // previous failed test runs (the language preference is stored server-side).
+    // Only save if a change is actually needed — OOUI keeps the Save button
+    // disabled when no form fields have changed, so calling save() unconditionally
+    // would time out when the language is already English.
     await preferencesPage.goto();
-    await preferencesPage.selectLanguage('en');
-    await preferencesPage.save();
+    if ((await preferencesPage.getSelectedLanguage()) !== 'en') {
+      await preferencesPage.selectLanguage('en');
+      await preferencesPage.save();
+    }
   });
 
   test('authenticated user can switch UI language to Ukrainian and back to English', async ({
