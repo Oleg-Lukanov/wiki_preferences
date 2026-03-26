@@ -2,8 +2,8 @@ services:
   playwright:
     build: .
     environment:
-      - WIKI_USERNAME=${WIKI_USERNAME}
-      - WIKI_PASSWORD=${WIKI_PASSWORD}
+      - WIKI_BOTPASSWORD_NAME=${WIKI_BOTPASSWORD_NAME}
+      - WIKI_BOTPASSWORD_PASSWORD=${WIKI_BOTPASSWORD_PASSWORD}
       - CI=true
     volumes:
       # Mount local directory so the HTML report is available on the host after the run
