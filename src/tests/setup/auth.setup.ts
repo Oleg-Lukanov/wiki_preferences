@@ -3,6 +3,7 @@ import * as path from 'path';
 import * as fs from 'fs';
 
 const authFile = path.join(__dirname, '../../../.auth/user.json');
+const API_URL = 'https://en.wikipedia.org/w/api.php';
 
 setup('authenticate as Wikipedia user', async ({ page }) => {
   setup.setTimeout(90000);
@@ -11,45 +12,29 @@ setup('authenticate as Wikipedia user', async ({ page }) => {
   const botPassword = process.env.WIKI_BOTPASSWORD_PASSWORD;
 
   if (botName && botPassword) {
-    await page.goto('https://en.wikipedia.org/');
-    await page.waitForLoadState('domcontentloaded');
-
-    const loginToken: string = await page.evaluate(async () => {
-      const res = await fetch('/w/api.php?action=query&meta=tokens&type=login&format=json', {
-        credentials: 'include',
-      });
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const data = (await res.json()) as any;
-      return data.query.tokens.logintoken as string;
+    const tokenResponse = await page.context().request.get(API_URL, {
+      params: { action: 'query', meta: 'tokens', type: 'login', format: 'json' },
     });
+    const { query } = await tokenResponse.json();
+    const loginToken = query.tokens.logintoken as string;
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const loginResult: any = await page.evaluate(
-      async ({ name, pass, token }: { name: string; pass: string; token: string }) => {
-        const body = new URLSearchParams({
-          action: 'login',
-          format: 'json',
-          lgname: name,
-          lgpassword: pass,
-          lgtoken: token,
-        });
-        const res = await fetch('/w/api.php', {
-          method: 'POST',
-          credentials: 'include',
-          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-          body: body.toString(),
-        });
-        return res.json();
+    const loginResponse = await page.context().request.post(API_URL, {
+      form: {
+        action: 'login',
+        format: 'json',
+        lgname: botName,
+        lgpassword: botPassword,
+        lgtoken: loginToken,
       },
-      { name: botName, pass: botPassword, token: loginToken },
-    );
+    });
+    const loginData = await loginResponse.json();
 
-    if (loginResult.login?.result !== 'Success') {
-      throw new Error(`Bot password login failed: ${JSON.stringify(loginResult.login)}`);
+    if (loginData.login?.result !== 'Success') {
+      throw new Error(`Bot password login failed: ${JSON.stringify(loginData.login)}`);
     }
 
     await page.goto('https://en.wikipedia.org/wiki/Special:Preferences');
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('domcontentloaded');
     await expect(page).not.toHaveURL(/Special:UserLogin|UserLogin/);
 
     const authDir = path.dirname(authFile);
