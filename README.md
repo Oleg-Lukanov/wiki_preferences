@@ -51,20 +51,23 @@ wiki_preferences/
 ├── docker-compose.yml            # Docker Compose with report volume mount
 ├── run-tests.sh                  # Convenience script for Docker execution
 ├── src/
+│   ├── components/
+│   │   ├── UserMenuComponent.ts  # User dropdown menu (composition)
+│   │   └── SearchComponent.ts    # Search bar (composition)
+│   ├── fixtures/
+│   │   └── pageFixtures.ts       # Custom Playwright fixtures for POM injection
+│   ├── interfaces/
+│   │   ├── IUserMenu.ts          # Interface for user menu component
+│   │   └── ISearch.ts            # Interface for search component
 │   ├── pages/
 │   │   ├── BasePage.ts           # Base class (only class with constructor)
 │   │   ├── LoginPage.ts          # Login page interactions (used in setup only)
 │   │   ├── MainPage.ts           # Main page — composes UserMenu + Search
 │   │   └── PreferencesPage.ts    # Preferences page — language selector
-│   ├── components/
-│   │   ├── UserMenuComponent.ts  # User dropdown menu (composition)
-│   │   └── SearchComponent.ts    # Search bar (composition)
-│   └── fixtures/
-│       └── pageFixtures.ts       # Custom Playwright fixtures for POM injection
-└── tests/
-    ├── setup/
-    │   └── auth.setup.ts         # One-time login + storageState save
-    └── language-switch.spec.ts   # TC-01 automated test
+│   └── tests/
+│       ├── setup/
+│       │   └── auth.setup.ts     # One-time login + storageState save
+│       └── language-switch.spec.ts  # TC-01 automated test
 ```
 
 ---
@@ -112,7 +115,7 @@ npx playwright test
 npx playwright test --project=setup
 
 # Run only TC-01 (requires .auth/user.json to exist)
-npx playwright test tests/language-switch.spec.ts
+npx playwright test src/tests/language-switch.spec.ts
 ```
 
 ### In Docker
@@ -149,4 +152,4 @@ xdg-open playwright-report/index.html  # Linux
 - **POM with inheritance** — All page objects extend `BasePage`. Only `BasePage` has a constructor.
 - **Composition for shared components** — `UserMenuComponent` and `SearchComponent` are composed into page objects that need them (`MainPage`, `PreferencesPage`).
 - **Playwright fixtures** — Page objects are injected via custom fixtures in `src/fixtures/pageFixtures.ts`. Tests import `test` and `expect` from there.
-- **storageState authentication** — `tests/setup/auth.setup.ts` runs once before the main test project, logs in via the UI, and saves the session to `.auth/user.json`. All subsequent tests reuse this session without re-logging in.
+- **storageState authentication** — `src/tests/setup/auth.setup.ts` runs once before the main test project, logs in via the UI, and saves the session to `.auth/user.json`. All subsequent tests reuse this session without re-logging in.
