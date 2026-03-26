@@ -27,12 +27,11 @@ setup('authenticate as Wikipedia user', async ({ page }) => {
     const loginResult: any = await page.evaluate(
       async ({ name, pass, token }: { name: string; pass: string; token: string }) => {
         const body = new URLSearchParams({
-          action: 'clientlogin',
+          action: 'login',
           format: 'json',
-          username: name,
-          password: pass,
-          logintoken: token,
-          loginreturnurl: 'https://en.wikipedia.org/',
+          lgname: name,
+          lgpassword: pass,
+          lgtoken: token,
         });
         const res = await fetch('/w/api.php', {
           method: 'POST',
@@ -45,13 +44,8 @@ setup('authenticate as Wikipedia user', async ({ page }) => {
       { name: botName, pass: botPassword, token: loginToken },
     );
 
-    const { status, redirecttarget } = loginResult.clientlogin ?? {};
-    if (status === 'REDIRECT' && redirecttarget) {
-      await page.goto(redirecttarget as string);
-      await page.waitForURL(/en\.wikipedia\.org/, { timeout: 60000 });
-      await page.waitForLoadState('domcontentloaded');
-    } else if (status !== 'PASS') {
-      throw new Error(`Bot password login failed: ${JSON.stringify(loginResult.clientlogin)}`);
+    if (loginResult.login?.result !== 'Success') {
+      throw new Error(`Bot password login failed: ${JSON.stringify(loginResult.login)}`);
     }
 
     await page.goto('https://en.wikipedia.org/wiki/Special:Preferences');
