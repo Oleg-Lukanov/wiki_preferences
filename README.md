@@ -12,28 +12,28 @@ Playwright + TypeScript E2E automation project for testing the Wikipedia interfa
 
 **Title:** Authenticated user successfully switches the Wikipedia UI language from English to Ukrainian and back.
 
-| Field | Value |
-|---|---|
-| **ID** | TC-01 |
+| Field             | Value                                                                                 |
+| ----------------- | ------------------------------------------------------------------------------------- |
+| **ID**            | TC-01                                                                                 |
 | **Preconditions** | User account exists (`Lowyquzet`), browser starts with English UI (`html[lang="en"]`) |
-| **URL** | https://en.wikipedia.org/wiki/Main_Page |
+| **URL**           | https://en.wikipedia.org/wiki/Main_Page                                               |
 
 ### Steps
 
-| # | Action | Expected Result |
-|---|---|---|
-| 1 | Navigate to `https://en.wikipedia.org/wiki/Main_Page` | Main Page loads; `html[lang]` = `en` |
-| 2 | Click the profile icon (top-right) to open the user menu | Dropdown menu is visible |
-| 3 | Click **Preferences** in the dropdown | Redirected to `Special:Preferences` page |
-| 4 | Scroll to the **Internationalisation** section (Language field `#mw-input-wplanguage`) | Language combobox is visible |
-| 5 | Click the language combobox and type `uk` | Dropdown list shows language options matching "uk" |
-| 6 | Select **Ukrainian (uk)** from the dropdown | "Ukrainian" is chosen in the language field |
-| 7 | Click **Save** | Page reloads; `html[lang]` = `uk`; UI elements appear in Ukrainian |
-| 8 | Navigate to `Special:Preferences` again | Preferences page loads in Ukrainian |
-| 9 | Change the language back to **English (en)** and click **Save** | Page reloads; `html[lang]` = `en`; UI returns to English |
-| 10 | Click the profile icon to open the user menu | Dropdown is visible |
-| 11 | Click **Log out** | Redirect to Main Page; login link is now visible in the header |
-| 12 | Verify logged-out state | `#pt-login` element is visible; user is not logged in |
+| #   | Action                                                                                 | Expected Result                                                    |
+| --- | -------------------------------------------------------------------------------------- | ------------------------------------------------------------------ |
+| 1   | Navigate to `https://en.wikipedia.org/wiki/Main_Page`                                  | Main Page loads; `html[lang]` = `en`                               |
+| 2   | Click the profile icon (top-right) to open the user menu                               | Dropdown menu is visible                                           |
+| 3   | Click **Preferences** in the dropdown                                                  | Redirected to `Special:Preferences` page                           |
+| 4   | Scroll to the **Internationalisation** section (Language field `#mw-input-wplanguage`) | Language combobox is visible                                       |
+| 5   | Click the language combobox and type `uk`                                              | Dropdown list shows language options matching "uk"                 |
+| 6   | Select **Ukrainian (uk)** from the dropdown                                            | "Ukrainian" is chosen in the language field                        |
+| 7   | Click **Save**                                                                         | Page reloads; `html[lang]` = `uk`; UI elements appear in Ukrainian |
+| 8   | Navigate to `Special:Preferences` again                                                | Preferences page loads in Ukrainian                                |
+| 9   | Change the language back to **English (en)** and click **Save**                        | Page reloads; `html[lang]` = `en`; UI returns to English           |
+| 10  | Click the profile icon to open the user menu                                           | Dropdown is visible                                                |
+| 11  | Click **Log out**                                                                      | Redirect to Main Page; login link is now visible in the header     |
+| 12  | Verify logged-out state                                                                | `#pt-login` element is visible; user is not logged in              |
 
 **Postconditions:** User is logged out; interface language is English.
 
@@ -146,7 +146,7 @@ xdg-open playwright-report/index.html  # Linux
 
 ## Architecture Notes
 
-- **POM with inheritance** — All page objects extend `BasePage`. Only `BasePage` has a constructor.  
-- **Composition for shared components** — `UserMenuComponent` and `SearchComponent` are composed into page objects that need them (`MainPage`, `PreferencesPage`).  
-- **Playwright fixtures** — Page objects are injected via custom fixtures in `src/fixtures/pageFixtures.ts`. Tests import `test` and `expect` from there.  
+- **POM with inheritance** — All page objects extend `BasePage`. Only `BasePage` has a constructor.
+- **Composition for shared components** — `UserMenuComponent` and `SearchComponent` are composed into page objects that need them (`MainPage`, `PreferencesPage`).
+- **Playwright fixtures** — Page objects are injected via custom fixtures in `src/fixtures/pageFixtures.ts`. Tests import `test` and `expect` from there.
 - **storageState authentication** — `tests/setup/auth.setup.ts` runs once before the main test project, logs in via the UI, and saves the session to `.auth/user.json`. All subsequent tests reuse this session without re-logging in.

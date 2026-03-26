@@ -11,7 +11,10 @@ export class UserMenuComponent extends BaseComponent implements IUserMenu {
 
   // Built-in locators for visible menu item links — exact:true avoids partial-text
   // collisions with body links like "Help:Preferences" or "Restore all default preferences"
-  private readonly preferencesLink = this.page.getByRole('link', { name: 'Preferences', exact: true });
+  private readonly preferencesLink = this.page.getByRole('link', {
+    name: 'Preferences',
+    exact: true,
+  });
   private readonly logoutLink = this.page.getByRole('link', { name: 'Log out', exact: true });
   readonly loginLink = this.page.getByRole('link', { name: 'Log in', exact: true });
 

@@ -54,7 +54,9 @@ test.describe('TC-01: Interface language switch', () => {
 
     // ── Step 8: Verify user is now logged out ─────────────────────────────────
     // exact:true distinguishes header 'Log in' from body text 'log in'
-    await expect(preferencesPage.page.getByRole('link', { name: 'Log in', exact: true })).toBeVisible();
+    await expect(
+      preferencesPage.page.getByRole('link', { name: 'Log in', exact: true }),
+    ).toBeVisible();
   });
 
   test('authenticated user can switch UI language to Ukrainian', async ({

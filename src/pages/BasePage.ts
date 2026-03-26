@@ -12,6 +12,9 @@ export abstract class BasePage {
   }
 
   async getHtmlLang(): Promise<string> {
-    return this.page.locator('html').getAttribute('lang').then((v) => v ?? '');
+    return this.page
+      .locator('html')
+      .getAttribute('lang')
+      .then((v) => v ?? '');
   }
 }

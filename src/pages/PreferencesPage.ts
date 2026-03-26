@@ -31,10 +31,7 @@ export class PreferencesPage extends BasePage {
   }
 
   async save(): Promise<void> {
-    await Promise.all([
-      this.page.waitForLoadState('domcontentloaded'),
-      this.saveButton.click(),
-    ]);
+    await Promise.all([this.page.waitForLoadState('domcontentloaded'), this.saveButton.click()]);
   }
 
   async getSelectedLanguage(): Promise<string> {
