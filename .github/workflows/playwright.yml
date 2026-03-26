@@ -32,8 +32,8 @@ jobs:
       - name: Run Playwright tests
         run: npx playwright test --reporter=html
         env:
-          WIKI_BOTPASSWORD_NAME: ${{ secrets.WIKI_BOTPASSWORD_NAME }}
-          WIKI_BOTPASSWORD_PASSWORD: ${{ secrets.WIKI_BOTPASSWORD_PASSWORD }}
+          WIKI_USERNAME: ${{ secrets.WIKI_USERNAME }}
+          WIKI_PASSWORD: ${{ secrets.WIKI_PASSWORD }}
 
       - name: Upload report artifact
         uses: actions/upload-pages-artifact@v3
