@@ -5,11 +5,74 @@ import * as fs from 'fs';
 const authFile = path.join(__dirname, '../../../.auth/user.json');
 
 setup('authenticate as Wikipedia user', async ({ page }) => {
+  setup.setTimeout(90000);
+
+  const botName = process.env.WIKI_BOTPASSWORD_NAME;
+  const botPassword = process.env.WIKI_BOTPASSWORD_PASSWORD;
+
+  if (botName && botPassword) {
+    await page.goto('https://en.wikipedia.org/');
+    await page.waitForLoadState('domcontentloaded');
+
+    const loginToken: string = await page.evaluate(async () => {
+      const res = await fetch('/w/api.php?action=query&meta=tokens&type=login&format=json', {
+        credentials: 'include',
+      });
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const data = (await res.json()) as any;
+      return data.query.tokens.logintoken as string;
+    });
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const loginResult: any = await page.evaluate(
+      async ({ name, pass, token }: { name: string; pass: string; token: string }) => {
+        const body = new URLSearchParams({
+          action: 'clientlogin',
+          format: 'json',
+          username: name,
+          password: pass,
+          logintoken: token,
+          loginreturnurl: 'https://en.wikipedia.org/',
+        });
+        const res = await fetch('/w/api.php', {
+          method: 'POST',
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: body.toString(),
+        });
+        return res.json();
+      },
+      { name: botName, pass: botPassword, token: loginToken },
+    );
+
+    const { status, redirecttarget } = loginResult.clientlogin ?? {};
+    if (status === 'REDIRECT' && redirecttarget) {
+      await page.goto(redirecttarget as string);
+      await page.waitForURL(/en\.wikipedia\.org/, { timeout: 60000 });
+      await page.waitForLoadState('domcontentloaded');
+    } else if (status !== 'PASS') {
+      throw new Error(`Bot password login failed: ${JSON.stringify(loginResult.clientlogin)}`);
+    }
+
+    await page.goto('https://en.wikipedia.org/wiki/Special:Preferences');
+    await page.waitForLoadState('networkidle');
+    await expect(page).not.toHaveURL(/Special:UserLogin|UserLogin/);
+
+    const authDir = path.dirname(authFile);
+    if (!fs.existsSync(authDir)) {
+      fs.mkdirSync(authDir, { recursive: true });
+    }
+    await page.context().storageState({ path: authFile });
+    return;
+  }
+
   const username = process.env.WIKI_USERNAME;
   const password = process.env.WIKI_PASSWORD;
 
   if (!username || !password) {
-    throw new Error('WIKI_USERNAME and WIKI_PASSWORD must be set in .env');
+    throw new Error(
+      'Set WIKI_USERNAME + WIKI_PASSWORD in .env (local) or WIKI_BOTPASSWORD_NAME + WIKI_BOTPASSWORD_PASSWORD (CI)',
+    );
   }
 
   await page.goto('https://en.wikipedia.org/w/index.php?title=Special:UserLogin');
@@ -19,7 +82,7 @@ setup('authenticate as Wikipedia user', async ({ page }) => {
   await page.getByLabel('Password').fill(password);
   await page.getByRole('button', { name: 'Log in' }).click();
 
-  await page.waitForURL(/en\.wikipedia\.org/, { timeout: 30000 });
+  await page.waitForURL(/en\.wikipedia\.org/, { timeout: 60000 });
   await page.waitForLoadState('domcontentloaded');
 
   await expect(page).not.toHaveURL(/Special:UserLogin/);
